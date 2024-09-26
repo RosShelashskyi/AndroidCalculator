@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import java.math.BigDecimal
+import java.util.Deque
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,7 +16,11 @@ class MainActivity : AppCompatActivity() {
     private var afterOperator = false
     private var firstDigitZero = false
     private var hasDot = false
-    private var valueStatIndex = 0
+    private var valueStartIndex = 0
+    private val inputList: MutableList<String> = mutableListOf()
+    private var divideZero = false
+    private val opStk: ArrayDeque<String> = ArrayDeque()
+    private val valStk: ArrayDeque<BigDecimal> = ArrayDeque()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +77,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun onOperator(resultTv: TextView, operator: String){
         if(afterOperator) return
+        inputList.add(output.substring(valueStartIndex))
+        inputList.add(operator)
         output += operator
         resultTv.text = output
         afterOperator = true
@@ -79,6 +87,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun onDot(resultTv: TextView){
         if(hasDot) return
+        if(afterOperator){
+            output += "0"
+            afterOperator = false
+        }
         output += "."
         resultTv.text = output
         hasDot = true
@@ -95,5 +107,12 @@ class MainActivity : AppCompatActivity() {
         afterOperator = false
         firstDigitZero = true
         hasDot = false
+    }
+
+    private fun precedence(op: String): Int{
+        if(op == "$") return 0
+        if(op == "+" || op == "-") return 1
+        if(op == "*" || op == "/") return 2
+        return -1
     }
 }
