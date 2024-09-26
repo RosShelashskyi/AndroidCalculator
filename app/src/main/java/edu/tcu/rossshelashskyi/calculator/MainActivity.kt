@@ -50,14 +50,14 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.multiply_btn).setOnClickListener{onOperator(resultTv, "*")}
         findViewById<Button>(R.id.divide_btn).setOnClickListener{onOperator(resultTv, "/")}
 
-        findViewById<Button>(R.id.equal_btn).setOnClickListener{onEqual()}
+        findViewById<Button>(R.id.equal_btn).setOnClickListener{onEqual(resultTv)}
         findViewById<Button>(R.id.dot_btn).setOnClickListener{onDot(resultTv)}
         findViewById<Button>(R.id.clear_btn).setOnClickListener{onClear(resultTv)}
 
     }
     private fun onDigit(resultTv: TextView, digit: String){
         if(digit == "0"){
-            if(firstDigitZero) return
+            if(firstDigitZero || divideZero) return
             if(output.isEmpty() || afterOperator){
                 firstDigitZero = true
             }
@@ -76,17 +76,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onOperator(resultTv: TextView, operator: String){
-        if(afterOperator) return
+        if(afterOperator || divideZero) return
         inputList.add(output.substring(valueStartIndex))
         inputList.add(operator)
         output += operator
         resultTv.text = output
         afterOperator = true
         firstDigitZero = false
+        hasDot = false;
+        inputList.add(output.substring(valueStartIndex))
+        inputList.add(operator)
+        valueStartIndex = output.length;
     }
 
     private fun onDot(resultTv: TextView){
-        if(hasDot) return
+        if(hasDot || divideZero) return
         if(afterOperator){
             output += "0"
             afterOperator = false
@@ -97,16 +101,26 @@ class MainActivity : AppCompatActivity() {
         firstDigitZero = false
     }
 
-    private fun onEqual(){
+    private fun onEqual(resultTv: TextView){
         if(afterOperator) return
+        inputList.add(output.substring(valueStartIndex))
+        output = evalExp().toString()
+        if(divideZero) {
+            output = "Error"
+        }
+        resultTv.text = output
+
     }
 
     private fun onClear(resultTv: TextView){
+        divideZero = false
         output = "0"
         resultTv.text = output
         afterOperator = false
         firstDigitZero = true
         hasDot = false
+        inputList.clear()
+        valueStartIndex = 0
     }
 
     private fun precedence(op: String): Int{
@@ -114,5 +128,45 @@ class MainActivity : AppCompatActivity() {
         if(op == "+" || op == "-") return 1
         if(op == "*" || op == "/") return 2
         return -1
+    }
+
+    private fun doOp(){
+        val x: BigDecimal = valStk.removeLast()
+        val y: BigDecimal = valStk.removeLast()
+        val op = opStk.removeLast()
+        if(op == "+"){
+            valStk.addLast(y.add(x))
+        }else if (op == "-"){
+            valStk.addLast(y.subtract(x))
+        }else if (op == "*"){
+            valStk.addLast(y.multiply(x))
+        }else{
+            if (x == BigDecimal.ZERO){
+                divideZero = true
+                return
+            }
+            valStk.addLast(y.divide(x))
+        }
+    }
+
+    private fun repeatOps(refOp: String){
+        while(valStk.size > 1 && precedence(opStk.last()) >= precedence(refOp)){
+            doOp()
+            if(divideZero) return
+        }
+    }
+
+    private fun evalExp(): BigDecimal{
+        for(tok in inputList){
+            if(tok.toBigDecimalOrNull() != null){
+                valStk.addLast(tok.toBigDecimal())
+            }else{
+                repeatOps(tok)
+                if(divideZero) return BigDecimal.ZERO
+                opStk.addLast(tok)
+            }
+        }
+        repeatOps("$")
+        return valStk.last()
     }
 }
