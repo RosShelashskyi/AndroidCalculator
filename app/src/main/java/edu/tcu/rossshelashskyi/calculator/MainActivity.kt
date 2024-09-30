@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Deque
 
 class MainActivity : AppCompatActivity() {
@@ -104,7 +105,7 @@ class MainActivity : AppCompatActivity() {
     private fun onEqual(resultTv: TextView){
         if(afterOperator) return
         inputList.add(output.substring(valueStartIndex))
-        output = evalExp().toString()
+        output = evalExp().setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toString()
         if(divideZero) {
             output = "Error"
         }
@@ -121,6 +122,8 @@ class MainActivity : AppCompatActivity() {
         hasDot = false
         inputList.clear()
         valueStartIndex = 0
+        valStk.clear()
+        opStk.clear()
     }
 
     private fun precedence(op: String): Int{
@@ -145,7 +148,7 @@ class MainActivity : AppCompatActivity() {
                 divideZero = true
                 return
             }
-            valStk.addLast(y.divide(x))
+            valStk.addLast(y.divide(x, 8, RoundingMode.HALF_UP))
         }
     }
 
