@@ -85,8 +85,6 @@ class MainActivity : AppCompatActivity() {
         afterOperator = true
         firstDigitZero = false
         hasDot = false;
-        inputList.add(output.substring(valueStartIndex))
-        inputList.add(operator)
         valueStartIndex = output.length;
     }
 
@@ -160,6 +158,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun evalExp(): BigDecimal{
+        for(tok in inputList){
+            println(tok);
+        }
         for(tok in inputList){
             if(tok.toBigDecimalOrNull() != null){
                 valStk.addLast(tok.toBigDecimal())
