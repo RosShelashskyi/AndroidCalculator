@@ -9,7 +9,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.Deque
 
 class MainActivity : AppCompatActivity() {
 
@@ -84,8 +83,8 @@ class MainActivity : AppCompatActivity() {
         resultTv.text = output
         afterOperator = true
         firstDigitZero = false
-        hasDot = false;
-        valueStartIndex = output.length;
+        hasDot = false
+        valueStartIndex = output.length
     }
 
     private fun onDot(resultTv: TextView){
@@ -135,18 +134,23 @@ class MainActivity : AppCompatActivity() {
         val x: BigDecimal = valStk.removeLast()
         val y: BigDecimal = valStk.removeLast()
         val op = opStk.removeLast()
-        if(op == "+"){
-            valStk.addLast(y.add(x))
-        }else if (op == "-"){
-            valStk.addLast(y.subtract(x))
-        }else if (op == "*"){
-            valStk.addLast(y.multiply(x))
-        }else{
-            if (x == BigDecimal.ZERO){
-                divideZero = true
-                return
+        when (op) {
+            "+" -> {
+                valStk.addLast(y.add(x))
             }
-            valStk.addLast(y.divide(x, 8, RoundingMode.HALF_UP))
+            "-" -> {
+                valStk.addLast(y.subtract(x))
+            }
+            "*" -> {
+                valStk.addLast(y.multiply(x))
+            }
+            else -> {
+                if (x == BigDecimal.ZERO){
+                    divideZero = true
+                    return
+                }
+                valStk.addLast(y.divide(x, 8, RoundingMode.HALF_UP))
+            }
         }
     }
 
@@ -159,7 +163,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun evalExp(): BigDecimal{
         for(tok in inputList){
-            println(tok);
+            println(tok)
         }
         for(tok in inputList){
             if(tok.toBigDecimalOrNull() != null){
