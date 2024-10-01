@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         inputList.add(output.substring(valueStartIndex))
         output = evalExp().setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toString()
         if(divideZero) {
-            output = "Error"
+            output = "Error!\nTap CLR to continue."
         }
         resultTv.text = output
 
@@ -170,6 +170,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         repeatOps("$")
+        if(divideZero) return BigDecimal.ZERO
         return valStk.last()
     }
 }
